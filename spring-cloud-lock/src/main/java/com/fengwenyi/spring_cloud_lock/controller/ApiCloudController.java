@@ -36,7 +36,11 @@ public class ApiCloudController {
 //        stringRedisTemplate.opsForValue().setIfAbsent(PRODUCT_ID, CLIENT_ID);
 //        stringRedisTemplate.expire(PRODUCT_ID, 30, TimeUnit.MILLISECONDS); // 解决防止服务挂掉，分布式锁没有被删掉，接口被锁死
             // 但是这两步不是原子操作
-            stringRedisTemplate.opsForValue().setIfAbsent(PRODUCT_ID, CLIENT_ID, 30, TimeUnit.MILLISECONDS); // 原子操作，交给Redis
+            Boolean result = stringRedisTemplate.opsForValue().setIfAbsent(PRODUCT_ID, CLIENT_ID, 30, TimeUnit.MILLISECONDS);// 原子操作，交给Redis
+
+            if (result == null || result) {
+                return "请稍后再试";
+            }
 
             // 这里有个问题：有可能程序没有执行完，设定的默认失效时间到了，分布式锁已经失效
             // 解决方案：开启一个线程，失效时间的三分之一执行一次
